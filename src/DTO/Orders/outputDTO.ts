@@ -1,0 +1,19 @@
+export type OrderoutpuDTO = {
+    id:number;
+    items:string[];
+    status:string;
+    codeEnv:string;
+    city:string;
+    userId:number;
+    amout:number;
+    name:string;
+    email:String;
+    street:string;
+    street_number:string;
+    complement:string
+    zip_code:string
+    neighborhood:string
+    state:string
+    country:string
+    phone:string
+   }
