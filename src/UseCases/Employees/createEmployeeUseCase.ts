@@ -14,7 +14,7 @@ export class EmployeeUSeCaseCreate implements CreateEmployeeInterface {
   /**
    * @constructor
    * @description Inicializa o caso de uso com o repositório necessário para criar colaboradores.
-   * 
+   *
    * @param {EmployeeRepository} employeeRepo - Repositório responsável por manipular dados dos colaboradores.
    */
   constructor(
@@ -26,7 +26,7 @@ export class EmployeeUSeCaseCreate implements CreateEmployeeInterface {
   /**
    * @method execute
    * @description Executa o processo de criação de um colaborador no sistema, verificando se o e-mail já existe e criando um novo registro se não houver conflitos.
-   * 
+   *
    * @param {Employee} input - Objeto contendo os dados do colaborador a ser criado.
    * @returns {Promise<string | null>} Retorna uma string indicando sucesso ou `null` se houver um problema.
    * @throws {Conflict} Lança um erro de conflito se o e-mail do colaborador já estiver cadastrado.
