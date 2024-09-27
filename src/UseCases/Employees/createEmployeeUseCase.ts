@@ -1,4 +1,4 @@
-import { inject, singleton } from "tsyringe/dist/decorators";
+import { inject, injectable, singleton } from "tsyringe/dist/decorators";
 import { CreateEmployeeInterface } from "../../Interfaces/Employees/createEmployeeInterface";
 import { Employee } from "../../Entities/employee";
 import { EmployeeRepository } from "../../Repositories/Employees";
@@ -9,7 +9,7 @@ import { BadRequestError, Conflict } from "../../handleError/errors";
  * @implements {CreateEmployeeInterface}
  * @description Caso de uso responsável por criar um novo colaborador (Employee) no sistema.
  */
-@singleton()
+@injectable()
 export class EmployeeUSeCaseCreate implements CreateEmployeeInterface {
   /**
    * @constructor
