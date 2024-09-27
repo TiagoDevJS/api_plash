@@ -17,8 +17,21 @@ export type OrderItems = {
   model: string;
   quantity: number;
 };
+/**
+ * @class CreateDvlUseCase
+ * @implements {CreateDvlUseCaseInterface}
+ * @description Classe responsável por criar a divisão de lucro (DVL) para os usuários baseada nas revistas adquiridas.
+ */
 @injectable()
 export class CreateDvlUseCase implements CreateDvlUseCaseInterface {
+  /**
+   * @constructor
+   * @description Inicializa o caso de uso para criação de divisão de lucro com os repositórios necessários.
+   *
+   * @param {DvlsRepository} dvlsRepo - Repositório responsável por manipular dados de DVL.
+   * @param {MagazineRepository} magazineRepo - Repositório responsável por manipular dados das revistas.
+   * @param {UserRepository} userRepo - Repositório responsável por manipular dados dos usuários.
+   */
   constructor(
     //@ts-ignore
     @inject(DvlsRepository)
@@ -30,40 +43,51 @@ export class CreateDvlUseCase implements CreateDvlUseCaseInterface {
     private readonly magazineRepo: MagazineRepository,
     private readonly userRepo: UserRepository
   ) {}
-  // Funçao que executa a chamada para o respository
+
+  /**
+   * @method execute
+   * @description Executa a criação de divisões de lucro (DVL) para as revistas adquiridas por um usuário.
+   *
+   * @param {OrderZodValidation} data - Dados validados que contêm itens (revistas) e metadados (informações do usuário).
+   * @returns {Promise<string>} Retorna uma mensagem de sucesso quando a criação de DVL for bem-sucedida.
+   * @throws {BadRequestError} Lança um erro caso ocorra alguma falha durante o processo de criação.
+   */
   async execute(data: OrderZodValidation): Promise<string> {
     const { items, metadata } = data;
 
     try {
-      // Busca o id do usuario Classe private FindUSer
       const id = await this.findUser(Number(metadata.id));
-      //Bucas as revistas Classe Private FindMagazines
+
       const magazines = await this.findMagazines(items as []);
-      // Mapea os dados  em magazines criando um instancia da Class dvl e enviando os dados para respository
+
       const createDvlsPromises = magazines.map((item) => {
         const dvls = Dvl.create(item as Dvl, id);
-       // Retorna os dados do respository 
         return this.dvlsRepo.create(dvls);
       });
-      // Inicia a promise  para criar os dvl
+
       await Promise.all(createDvlsPromises);
-      //Retorna a string criada com sucesso para sinalizar que tudo ocorreu bem 
+
       return `Divisão de lucro criada com sucesso!`;
     } catch (error: any) {
-      // Lança um erro com winstom logger e passando o erro 
       logger.error(`Erro ao criar divisão de lucro ${error.message}`);
       throw new BadRequestError(
         `Erro ao criar divisão de lucro! Error: ${error?.message}`
       );
     }
   }
-  // Funçao que busca as resvistas  no respository
+
+  /**
+   * @method findMagazines
+   * @description Busca as revistas associadas aos itens de um pedido no repositório de revistas.
+   *
+   * @param {ItemsOrder[]} items - Array contendo os itens (revistas) adquiridos.
+   * @returns {Promise<{ name: string, price: number, picture: string, keyPayment: string }[]>} Retorna um array com os dados das revistas.
+   * @throws {NotFoundError} Lança um erro se nenhuma revista for encontrada.
+   */
   private async findMagazines(items: ItemsOrder[]) {
-    // Mapeia os ids do getway e pagamento para um array 
     const ids = items.map((item) => Number(item.code));
-    // Busca as revistas  com os ids passado pelo getway 
     const magazines = await this.magazineRepo.findByIDS(ids);
-    // Retorna um array de objeto de revistas baseado nos parametros colocados 
+
     return magazines.map((magazine) => {
       return {
         name: magazine.name,
@@ -73,20 +97,28 @@ export class CreateDvlUseCase implements CreateDvlUseCaseInterface {
       };
     });
   }
-  //Funçao que busca os usuarios no repository 
+
+  /**
+   * @method findUser
+   * @description Busca o usuário no repositório de usuários com base no ID.
+   *
+   * @param {number} id - ID do usuário a ser buscado.
+   * @returns {Promise<number>} Retorna o ID do usuário se encontrado.
+   * @throws {NotFoundError} Lança um erro se o usuário não for encontrado.
+   * @throws {BadRequestError} Lança um erro caso ocorra falha durante a busca.
+   */
   private async findUser(id: number): Promise<number> {
     const existUser = await this.userRepo.findID(id);
-    // verifica se o usuario exista caso contrario lança um error como nao encontrado!
+
     if (!existUser) {
       logger.warn(`Usuário ${id} não cadastrado na base de dados`);
-      throw new NotFoundError(`Usuário  não cadastrado na base de dados `);
+      throw new NotFoundError(`Usuário não cadastrado na base de dados`);
     }
+
     try {
-      // Retorna o id do usuario 
       return existUser?.id as number;
     } catch (error) {
-      // Lança um erro badrequest para qualquer outro tipo de erro !
-      throw new BadRequestError(`Erro ao buscar usuario na base de dados`);
+      throw new BadRequestError(`Erro ao buscar usuário na base de dados`);
     }
   }
 }
